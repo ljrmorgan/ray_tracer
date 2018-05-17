@@ -1,7 +1,9 @@
 #include <iostream>
 
-#include "vec3.h"
+#include "hitable_list.h"
 #include "ray.h"
+#include "sphere.h"
+#include "vec3.h"
 
 static const vec3 WHITE(1.0, 1.0, 1.0);
 static const vec3 BLUE(0.5, 0.7, 1.0);
@@ -12,47 +14,19 @@ vec3 lerp(float t, const vec3& start, const vec3& end)
     return (1.0 - t) * start + t * end;
 }
 
-float hit_sphere(const vec3& center, float radius, const ray& r)
-{
-    // Equation of a sphere centered at C = (cx, cy, cz), radius R:
-    // (x - cx)^2 + (y - cy)^2 + (z - cz)^2 = R^2
-    // or in vector form:
-    // dot((p - C), (p - C)) = R^2
-    // In our case `p` is our ray, of the form:
-    // p(t) = A + t * B
-    // If our ray hits the sphere then there must be a `t` s.t:
-    // dot((A + t * B - C), (A + t * B - C)) = R^2
-    // Solving for t gives us:
-    // 0 = dot(B, B) * t^2 + 2 * dot(B, A - C) * t + dot(A - C, A - C) - R^2
-    // ray misses the spehere if no roots, touches the sphere if one root,
-    // intersects twice if two roots
-    vec3 oc = r.origin() - center;
-    float a = dot(r.direction(), r.direction());
-    float b = 2.0 * dot(oc, r.direction());
-    float c = dot(oc, oc) - radius * radius;
-    float discriminant = b * b - 4 * a * c;
-    if (discriminant < 0)
-    {
-        return -1.0;
-    }
-    return (-b - sqrt(discriminant)) / (2.0 * a);
-}
-
 // Color of the ray
-vec3 color(const ray& r)
+vec3 color(const ray& r, hitable *world)
 {
-    const vec3 sphere_center(0, 0, -1);
-    float t = hit_sphere(sphere_center, 0.5, r);
-    if (t > 0)
+    hit_record rec;
+    if (world->hit(r, 0.0, MAXFLOAT, rec))
     {
-        // Compute unit length normal (each component in [-1, 1])
-        vec3 N = unit_vector(r.point_at_parameter(t) - sphere_center);
+        vec3 &N = rec.normal;
         // Map to vector where each component is in [0, 1]
         return 0.5 * vec3(N.x() + 1, N.y() + 1, N.z() + 1);
     }
 
     vec3 unit_direction = unit_vector(r.direction());
-    t = 0.5 * (unit_direction.y() + 1.0);
+    float t = 0.5 * (unit_direction.y() + 1.0);
     return lerp(t, WHITE, BLUE);
 }
 
@@ -70,15 +44,22 @@ int main(int argc, char const *argv[])
     vec3 vertical(0.0, 2.0, 0.0);
     vec3 origin(0.0, 0.0, 0.0);
 
+    hitable *list[2];
+    list[0] = new sphere(vec3(0, 0, -1), 0.5);
+    list[1] = new sphere(vec3(0, -100.5, -1), 100);
+    hitable *world = new hitable_list(list, 2);
+
     for (int j = ny - 1; j >= 0; --j) {
         for (int i = 0; i < nx; ++i) {
             float u = float(i) / float(nx);
             float v = float(j) / float(ny);
             ray r(origin, lower_left_corner + u * horizontal + v * vertical);
-            vec3 col = color(r);
-            int ir = int(255.99 * col.r());
-            int ig = int(255.99 * col.g());
-            int ib = int(255.99 * col.b());
+
+            // vec3 p = r.point_at_parameter(2.0);
+            vec3 col = color(r, world);
+            int ir = int(255.99 * col[0]);
+            int ig = int(255.99 * col[1]);
+            int ib = int(255.99 * col[2]);
 
             std::cout << ir << " " << ig << " " << ib << std::endl;
         }
