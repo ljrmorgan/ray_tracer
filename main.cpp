@@ -35,6 +35,8 @@ int main(int argc, char const *argv[])
 {
     int nx = 200;
     int ny = 100;
+    int ns = 100;
+
     std::cout << "P3" << std::endl
         << nx << " " << ny << std::endl
         << "255" << std::endl;
@@ -47,12 +49,18 @@ int main(int argc, char const *argv[])
     camera cam;
     for (int j = ny - 1; j >= 0; --j) {
         for (int i = 0; i < nx; ++i) {
-            float u = float(i) / float(nx);
-            float v = float(j) / float(ny);
-            ray r = cam.get_ray(u, v);
+            vec3 col(0, 0, 0);
+            for (int s = 0; s < ns; ++s)
+            {
+                float u = float(i + drand48()) / float(nx);
+                float v = float(j + drand48()) / float(ny);
+                ray r = cam.get_ray(u, v);
 
-            // vec3 p = r.point_at_parameter(2.0);
-            vec3 col = color(r, world);
+                // vec3 p = r.point_at_parameter(2.0);
+                col += color(r, world);
+            }
+
+            col /= float(ns);
             int ir = int(255.99 * col[0]);
             int ig = int(255.99 * col[1]);
             int ib = int(255.99 * col[2]);
