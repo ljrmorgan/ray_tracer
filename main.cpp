@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "camera.h"
 #include "hitable_list.h"
 #include "ray.h"
 #include "sphere.h"
@@ -38,22 +39,17 @@ int main(int argc, char const *argv[])
         << nx << " " << ny << std::endl
         << "255" << std::endl;
 
-    // camera/origin in the middle of our plane
-    vec3 lower_left_corner(-2.0, -1.0, -1.0);
-    vec3 horizontal(4.0, 0.0, 0.0);
-    vec3 vertical(0.0, 2.0, 0.0);
-    vec3 origin(0.0, 0.0, 0.0);
-
     hitable *list[2];
     list[0] = new sphere(vec3(0, 0, -1), 0.5);
     list[1] = new sphere(vec3(0, -100.5, -1), 100);
     hitable *world = new hitable_list(list, 2);
 
+    camera cam;
     for (int j = ny - 1; j >= 0; --j) {
         for (int i = 0; i < nx; ++i) {
             float u = float(i) / float(nx);
             float v = float(j) / float(ny);
-            ray r(origin, lower_left_corner + u * horizontal + v * vertical);
+            ray r = cam.get_ray(u, v);
 
             // vec3 p = r.point_at_parameter(2.0);
             vec3 col = color(r, world);
