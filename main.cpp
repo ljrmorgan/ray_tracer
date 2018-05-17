@@ -5,7 +5,6 @@
 
 static const vec3 WHITE(1.0, 1.0, 1.0);
 static const vec3 BLUE(0.5, 0.7, 1.0);
-static const vec3 RED(1, 0, 0);
 
 // Linearly interpolate between start and end. Assumes 0 <= t <= 1
 vec3 lerp(float t, const vec3& start, const vec3& end)
@@ -13,7 +12,7 @@ vec3 lerp(float t, const vec3& start, const vec3& end)
     return (1.0 - t) * start + t * end;
 }
 
-bool hit_sphere(const vec3& center, float radius, const ray& r)
+float hit_sphere(const vec3& center, float radius, const ray& r)
 {
     // Equation of a sphere centered at C = (cx, cy, cz), radius R:
     // (x - cx)^2 + (y - cy)^2 + (z - cz)^2 = R^2
@@ -32,19 +31,28 @@ bool hit_sphere(const vec3& center, float radius, const ray& r)
     float b = 2.0 * dot(oc, r.direction());
     float c = dot(oc, oc) - radius * radius;
     float discriminant = b * b - 4 * a * c;
-    return (discriminant > 0);
+    if (discriminant < 0)
+    {
+        return -1.0;
+    }
+    return (-b - sqrt(discriminant)) / (2.0 * a);
 }
 
 // Color of the ray
 vec3 color(const ray& r)
 {
-    if (hit_sphere(vec3(0, 0, -1), 0.5, r))
+    const vec3 sphere_center(0, 0, -1);
+    float t = hit_sphere(sphere_center, 0.5, r);
+    if (t > 0)
     {
-        return RED;
+        // Compute unit length normal (each component in [-1, 1])
+        vec3 N = unit_vector(r.point_at_parameter(t) - sphere_center);
+        // Map to vector where each component is in [0, 1]
+        return 0.5 * vec3(N.x() + 1, N.y() + 1, N.z() + 1);
     }
 
     vec3 unit_direction = unit_vector(r.direction());
-    float t = 0.5 * (unit_direction.y() + 1.0);
+    t = 0.5 * (unit_direction.y() + 1.0);
     return lerp(t, WHITE, BLUE);
 }
 
