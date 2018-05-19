@@ -11,5 +11,13 @@ cmake --build build -- -j3
 Running:
 ```
 ./bin/ray_tracer > bin/ray.ppm
+```
+
+Opening the output file:
+```
+# Linux
 feh bin/ray.ppm
+
+# OS X
+open bin/ray.ppm
 ```
