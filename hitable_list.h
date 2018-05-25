@@ -1,5 +1,8 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+
 #include "hitable.h"
 
 class hitable_list : public hitable
@@ -8,16 +11,15 @@ public:
     hitable_list()
     {}
 
-    hitable_list(hitable **list, int list_size)
-    : list_(list)
-    , list_size_(list_size)
-    {}
+    void push_back(std::unique_ptr<hitable> &&element)
+    {
+        list_.push_back(std::move(element));
+    }
 
     virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec) const;
 
 private:
-    hitable **list_;
-    int list_size_;
+    std::vector<std::unique_ptr<hitable>> list_;
 };
 
 bool hitable_list::hit(const ray& r, float t_min, float t_max, hit_record& rec) const
@@ -25,9 +27,9 @@ bool hitable_list::hit(const ray& r, float t_min, float t_max, hit_record& rec) 
     hit_record temp_rec;
     bool hit_anything = false;
     double closest_so_far = t_max;
-    for (int i = 0; i < list_size_; ++i)
+    for (const auto &hitable : list_)
     {
-        if (list_[i]->hit(r, t_min, closest_so_far, temp_rec))
+        if (hitable->hit(r, t_min, closest_so_far, temp_rec))
         {
             hit_anything = true;
             closest_so_far = temp_rec.t;

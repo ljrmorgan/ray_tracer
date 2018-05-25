@@ -1,4 +1,5 @@
 #include <iostream>
+#include <utility>
 
 #include "camera.h"
 #include "hitable_list.h"
@@ -41,10 +42,9 @@ int main(int argc, char const *argv[])
         << nx << " " << ny << std::endl
         << "255" << std::endl;
 
-    hitable *list[2];
-    list[0] = new sphere(vec3(0, 0, -1), 0.5);
-    list[1] = new sphere(vec3(0, -100.5, -1), 100);
-    hitable *world = new hitable_list(list, 2);
+    hitable_list world;
+    world.push_back(std::make_unique<sphere>(vec3(0, 0, -1), 0.5));
+    world.push_back(std::make_unique<sphere>(vec3(0, -100.5, -1), 100));
 
     camera cam;
     for (int j = ny - 1; j >= 0; --j) {
@@ -57,7 +57,7 @@ int main(int argc, char const *argv[])
                 ray r = cam.get_ray(u, v);
 
                 // vec3 p = r.point_at_parameter(2.0);
-                col += color(r, world);
+                col += color(r, &world);
             }
 
             col /= float(ns);
