@@ -16,15 +16,27 @@ vec3 lerp(float t, const vec3& start, const vec3& end)
     return (1.0 - t) * start + t * end;
 }
 
+// Generate a point in the unit sphere centered at the origin
+vec3 random_in_unit_sphere()
+{
+    vec3 p;
+    do
+    {
+        // generate point in unit cube centered at origin
+        p = 2.0 * vec3(drand48(), drand48(), drand48()) - vec3(1, 1, 1);
+    }
+    while (p.squared_length() >= 1.0); // reject if outside unit sphere
+    return p;
+}
+
 // Color of the ray
 vec3 color(const ray& r, hitable *world)
 {
     hit_record rec;
     if (world->hit(r, 0.0, MAXFLOAT, rec))
     {
-        vec3 &N = rec.normal;
-        // Map to vector where each component is in [0, 1]
-        return 0.5 * vec3(N.x() + 1, N.y() + 1, N.z() + 1);
+        vec3 target = rec.p + rec.normal + random_in_unit_sphere();
+        return 0.5 * color(ray(rec.p, target - rec.p), world);
     }
 
     vec3 unit_direction = unit_vector(r.direction());
