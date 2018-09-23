@@ -1,13 +1,18 @@
 #pragma once
 
+#include <memory>
+
 #include "hitable.h"
+#include "ray.h"
+#include "material.h"
 
 class sphere : public hitable
 {
 public:
-    sphere(vec3 center, float radius)
+    sphere(vec3 center, float radius, std::unique_ptr<material> material)
     : center_(std::move(center))
     , radius_(radius)
+    , material_(std::move(material))
     {}
 
     ~sphere()
@@ -18,6 +23,7 @@ public:
 private:
     vec3 center_;
     float radius_;
+    std::unique_ptr<material> material_;
 };
 
 bool sphere::hit(const ray& r, float t_min, float t_max, hit_record &rec) const
@@ -47,6 +53,7 @@ bool sphere::hit(const ray& r, float t_min, float t_max, hit_record &rec) const
             rec.t = temp;
             rec.p = r.point_at_parameter(temp);
             rec.normal = (rec.p - center_) / radius_;
+            rec.mat_ptr = material_.get();
             return true;
         }
         temp = (-b + sqrt(discriminant)) / a;
@@ -55,6 +62,7 @@ bool sphere::hit(const ray& r, float t_min, float t_max, hit_record &rec) const
             rec.t = temp;
             rec.p = r.point_at_parameter(temp);
             rec.normal = (rec.p - center_) / radius_;
+            rec.mat_ptr = material_.get();
             return true;
         }
     }

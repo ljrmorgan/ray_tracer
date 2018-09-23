@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "hitable.h"
+#include "ray.h"
 
 class hitable_list : public hitable
 {

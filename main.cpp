@@ -6,6 +6,7 @@
 #include "ray.h"
 #include "sphere.h"
 #include "vec3.h"
+#include "lambertian.h"
 
 static const vec3 WHITE(1.0, 1.0, 1.0);
 static const vec3 BLUE(0.5, 0.7, 1.0);
@@ -16,27 +17,22 @@ vec3 lerp(float t, const vec3& start, const vec3& end)
     return (1.0 - t) * start + t * end;
 }
 
-// Generate a point in the unit sphere centered at the origin
-vec3 random_in_unit_sphere()
-{
-    vec3 p;
-    do
-    {
-        // generate point in unit cube centered at origin
-        p = 2.0 * vec3(drand48(), drand48(), drand48()) - vec3(1, 1, 1);
-    }
-    while (p.squared_length() >= 1.0); // reject if outside unit sphere
-    return p;
-}
-
 // Color of the ray
-vec3 color(const ray& r, hitable *world)
+vec3 color(const ray& r, hitable *world, int depth)
 {
     hit_record rec;
     if (world->hit(r, 0.001, MAXFLOAT, rec))
     {
-        vec3 target = rec.p + rec.normal + random_in_unit_sphere();
-        return 0.5 * color(ray(rec.p, target - rec.p), world);
+        ray scattered;
+        vec3 attenutation;
+        if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenutation, scattered))
+        {
+            return attenutation * color(scattered, world, depth + 1);
+        }
+        else
+        {
+            return vec3(0, 0, 0);
+        }
     }
 
     vec3 unit_direction = unit_vector(r.direction());
@@ -55,8 +51,10 @@ int main(int argc, char const *argv[])
         << "255" << std::endl;
 
     hitable_list world;
-    world.push_back(std::make_unique<sphere>(vec3(0, 0, -1), 0.5));
-    world.push_back(std::make_unique<sphere>(vec3(0, -100.5, -1), 100));
+    world.push_back(std::make_unique<sphere>(vec3(0, 0, -1), 0.5,
+        std::make_unique<lambertian>(vec3(0.8, 0.3, 0.3))));
+    world.push_back(std::make_unique<sphere>(vec3(0, -100.5, -1), 100,
+        std::make_unique<lambertian>(vec3(0.8, 0.8, 0.0))));
 
     camera cam;
     for (int j = ny - 1; j >= 0; --j) {
@@ -69,7 +67,7 @@ int main(int argc, char const *argv[])
                 ray r = cam.get_ray(u, v);
 
                 // vec3 p = r.point_at_parameter(2.0);
-                col += color(r, &world);
+                col += color(r, &world, 0);
             }
 
             col /= float(ns);
