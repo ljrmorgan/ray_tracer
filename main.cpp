@@ -8,6 +8,7 @@
 #include "vec3.h"
 #include "lambertian.h"
 #include "metal.h"
+#include "dielectric.h"
 
 static const vec3 WHITE(1.0, 1.0, 1.0);
 static const vec3 BLUE(0.5, 0.7, 1.0);
@@ -53,13 +54,13 @@ int main(int argc, char const *argv[])
 
     hitable_list world;
     world.push_back(std::make_unique<sphere>(vec3(0, 0, -1), 0.5,
-        std::make_unique<lambertian>(vec3(0.8, 0.3, 0.3))));
+        std::make_unique<lambertian>(vec3(0.1, 0.2, 0.5))));
     world.push_back(std::make_unique<sphere>(vec3(0, -100.5, -1), 100,
         std::make_unique<lambertian>(vec3(0.8, 0.8, 0.0))));
     world.push_back(std::make_unique<sphere>(vec3(1, 0, -1), 0.5,
-        std::make_unique<metal>(vec3(0.8, 0.6, 0.2), 1.0)));
+        std::make_unique<metal>(vec3(0.8, 0.6, 0.2), 0.6)));
     world.push_back(std::make_unique<sphere>(vec3(-1, 0, -1), 0.5,
-        std::make_unique<metal>(vec3(0.8, 0.8, 0.8), 0.3)));
+        std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
 
     camera cam;
     for (int j = ny - 1; j >= 0; --j) {
