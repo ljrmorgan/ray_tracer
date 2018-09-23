@@ -65,7 +65,11 @@ int main(int argc, char const *argv[])
     world.push_back(std::make_unique<sphere>(vec3(-1, 0, -1), -0.45,
         std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
 
-    camera cam(90, float(nx) / float(ny));
+    vec3 lookfrom(-2, 2, 1);
+    vec3 lookat(0, 0, -1);
+    vec3 vup(0, 1, 0);
+    float fov = 20;
+    camera cam(lookfrom, lookat, vup, fov, float(nx) / float(ny));
     for (int j = ny - 1; j >= 0; --j) {
         for (int i = 0; i < nx; ++i) {
             vec3 col(0, 0, 0);
