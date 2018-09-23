@@ -147,3 +147,16 @@ inline vec3& vec3::operator/=(const float t) {
 inline vec3 unit_vector(vec3 v) {
     return v / v.length();
 }
+
+// Generate a point in the unit sphere centered at the origin
+inline vec3 random_in_unit_sphere()
+{
+    vec3 p;
+    do
+    {
+        // generate point in unit cube centered at origin
+        p = 2.0 * vec3(drand48(), drand48(), drand48()) - vec3(1, 1, 1);
+    }
+    while (p.squared_length() >= 1.0); // reject if outside unit sphere
+    return p;
+}
