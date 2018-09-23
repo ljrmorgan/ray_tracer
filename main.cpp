@@ -59,7 +59,10 @@ int main(int argc, char const *argv[])
         std::make_unique<lambertian>(vec3(0.8, 0.8, 0.0))));
     world.push_back(std::make_unique<sphere>(vec3(1, 0, -1), 0.5,
         std::make_unique<metal>(vec3(0.8, 0.6, 0.2), 0.6)));
+    // Make a hollow glass sphere:
     world.push_back(std::make_unique<sphere>(vec3(-1, 0, -1), 0.5,
+        std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
+    world.push_back(std::make_unique<sphere>(vec3(-1, 0, -1), -0.45,
         std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
 
     camera cam;
