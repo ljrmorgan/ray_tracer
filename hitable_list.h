@@ -9,6 +9,8 @@
 class hitable_list : public hitable
 {
 public:
+    using size_type = std::vector<std::unique_ptr<hitable>>::size_type;
+
     hitable_list()
     {}
 
@@ -18,6 +20,11 @@ public:
     }
 
     virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec) const;
+
+    size_type size() const
+    {
+        return list_.size();
+    }
 
 private:
     std::vector<std::unique_ptr<hitable>> list_;

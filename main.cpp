@@ -42,35 +42,85 @@ vec3 color(const ray& r, hitable *world, int depth)
     return lerp(t, WHITE, BLUE);
 }
 
+hitable_list random_scene()
+{
+    hitable_list scene;
+
+    // floor
+    scene.push_back(std::make_unique<sphere>(vec3(0, -1000, 0), 1000,
+        std::make_unique<lambertian>(vec3(0.5, 0.5, 0.5))));
+
+    // Lots of small random spheres
+    float small_sphere_radius = 0.2;
+    for (int a = -11; a < 11; ++a)
+    {
+        for (int b = -11; b < 11; ++b)
+        {
+            vec3 center(a + 0.9 * drand48(), 0.2, b + 0.9 * drand48());
+            if ((center - vec3(4, 0.2, 0)).length() > 0.9)
+            {
+                float choose_mat = drand48();
+                if (choose_mat < 0.8) // pick diffuse
+                {
+                    vec3 albedo(drand48() * drand48(), drand48() * drand48(),
+                        drand48() * drand48());
+                    scene.push_back(std::make_unique<sphere>(center,
+                        small_sphere_radius,
+                        std::make_unique<lambertian>(albedo)));
+                }
+                else if (choose_mat < 0.95) // pick metal
+                {
+                    vec3 albedo(0.5 * (1 + drand48()), 0.5 * (1 + drand48()),
+                        0.5 * (1 + drand48()));
+                    float fuzziness = 0.5 * drand48();
+                    scene.push_back(std::make_unique<sphere>(center,
+                        small_sphere_radius,
+                        std::make_unique<metal>(albedo, fuzziness)));
+                }
+                else // pick glass
+                {
+                    scene.push_back(std::make_unique<sphere>(center,
+                        small_sphere_radius,
+                        std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
+                }
+            }
+        }
+    }
+
+    // brown diffuse sphere at the back
+    scene.push_back(std::make_unique<sphere>(vec3(-4, 1, 0), 1.0,
+        std::make_unique<lambertian>(vec3(0.4, 0.2, 0.1))));
+    // glass sphere in the middle
+    scene.push_back(std::make_unique<sphere>(vec3(0, 1, 0), 1.0,
+        std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
+    // metal sphere at the front
+    scene.push_back(std::make_unique<sphere>(vec3(4, 1, 0), 1.0,
+        std::make_unique<metal>(vec3(0.7, 0.6, 0.5), 0.0)));
+
+    std::cerr << "Generated scene with " << scene.size() << " spheres"
+        << std::endl;
+
+    return scene;
+}
+
 int main(int argc, char const *argv[])
 {
-    int nx = 200;
-    int ny = 100;
-    int ns = 100;
+    int nx = 1200;
+    int ny = 800;
+    int ns = 10;
 
     std::cout << "P3" << std::endl
         << nx << " " << ny << std::endl
         << "255" << std::endl;
 
-    hitable_list world;
-    world.push_back(std::make_unique<sphere>(vec3(0, 0, -1), 0.5,
-        std::make_unique<lambertian>(vec3(0.1, 0.2, 0.5))));
-    world.push_back(std::make_unique<sphere>(vec3(0, -100.5, -1), 100,
-        std::make_unique<lambertian>(vec3(0.8, 0.8, 0.0))));
-    world.push_back(std::make_unique<sphere>(vec3(1, 0, -1), 0.5,
-        std::make_unique<metal>(vec3(0.8, 0.6, 0.2), 0.6)));
-    // Make a hollow glass sphere:
-    world.push_back(std::make_unique<sphere>(vec3(-1, 0, -1), 0.5,
-        std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
-    world.push_back(std::make_unique<sphere>(vec3(-1, 0, -1), -0.45,
-        std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
+    hitable_list world = random_scene();
 
-    vec3 lookfrom(3, 3, 2);
-    vec3 lookat(0, 0, -1);
+    vec3 lookfrom(13, 2, 3);
+    vec3 lookat(0, 0, 0);
     vec3 vup(0, 1, 0);
     float fov = 20;
-    float dist_to_focus = (lookfrom - lookat).length();
-    float aperture = 1.2;
+    float dist_to_focus = 10.0;
+    float aperture = 0.1;
 
     camera cam(lookfrom, lookat, vup, fov, float(nx) / float(ny), aperture,
         dist_to_focus);
