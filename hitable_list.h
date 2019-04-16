@@ -6,7 +6,7 @@
 #include "hitable.h"
 #include "ray.h"
 
-class hitable_list : public hitable
+class hitable_list final : public hitable
 {
 public:
     using size_type = std::vector<std::unique_ptr<hitable>>::size_type;

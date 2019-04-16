@@ -15,7 +15,7 @@ inline float schlick(float cosine, float ref_idx)
     return r0 + (1 - r0) * pow((1 - cosine), 5);
 }
 
-class dielectric : public material
+class dielectric final : public material
 {
 public:
     dielectric(float ref_idx)
@@ -58,11 +58,11 @@ public:
         if (drand48() < reflect_prob)
         {
             vec3 reflected = reflect(r_in.direction(), rec.normal);
-            scattered = ray(rec.p, reflected);
+            scattered = ray(rec.p, reflected, r_in.time());
         }
         else
         {
-            scattered = ray(rec.p, refracted);
+            scattered = ray(rec.p, refracted, r_in.time());
         }
 
         return true;

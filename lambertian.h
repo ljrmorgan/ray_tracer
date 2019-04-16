@@ -6,7 +6,7 @@
 #include "ray.h"
 #include "vec3.h"
 
-class lambertian : public material
+class lambertian final : public material
 {
 public:
     lambertian(vec3 albedo)
@@ -17,7 +17,7 @@ public:
         ray& scattered) const override
     {
         vec3 target = rec.p + rec.normal + random_in_unit_sphere();
-        scattered = ray(rec.p, target - rec.p);
+        scattered = ray(rec.p, target - rec.p, r_in.time());
         attenuation = albedo_;
         return true;
     }

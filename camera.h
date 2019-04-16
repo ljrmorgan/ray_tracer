@@ -1,5 +1,6 @@
 #pragma once
 
+#include "utils.h"
 #include "ray.h"
 #include "vec3.h"
 
@@ -24,7 +25,9 @@ public:
         float vfov,  // vfov: top to bottom and in degrees
         float aspect,
         float aperture,
-        float focus_dist)
+        float focus_dist,
+        float t0,
+        float t1)
     {
         lens_radius_ = aperture / 2;
         float theta = vfov * M_PI / 180;
@@ -40,14 +43,19 @@ public:
             - half_height * focus_dist * v_ - focus_dist * w_;
         horizontal_ = 2 * half_width * focus_dist * u_;
         vertical_ = 2 * half_height * focus_dist * v_;
+
+        time0_ = t0;
+        time1_ = t1;
     }
 
     ray get_ray(float s, float t)
     {
         vec3 rd = lens_radius_ * random_in_unit_disk();
         vec3 offset = u_ * rd.x() + v_ * rd.y();
-        return ray(origin_ + offset, lower_left_corner_ + s * horizontal_
-            + t * vertical_ - origin_ - offset);
+        float time = lerp(time0_, time1_, drand48());
+        return ray(origin_ + offset,
+            lower_left_corner_ + s * horizontal_ + t * vertical_ - origin_ - offset,
+            time);
     }
 
 private:
@@ -59,4 +67,6 @@ private:
     vec3 v_;
     vec3 w_;
     float lens_radius_;
+    float time0_;
+    float time1_;
 };

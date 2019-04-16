@@ -1,32 +1,48 @@
 #pragma once
 
-#include <memory>
-
 #include "hitable.h"
 #include "ray.h"
 #include "material.h"
+#include "utils.h"
 
-class sphere final : public hitable
+class moving_sphere final : public hitable
 {
 public:
-    sphere(vec3 center, float radius, std::unique_ptr<material> material)
-    : center_(std::move(center))
+    moving_sphere(
+        vec3 center0,
+        vec3 center1,
+        float time0,
+        float time1,
+        float radius,
+        std::unique_ptr<material> material)
+    : center0_(std::move(center0))
+    , center1_(std::move(center1))
+    , time0_(time0)
+    , time1_(time1)
     , radius_(radius)
     , material_(std::move(material))
     {}
 
-    ~sphere()
+    ~moving_sphere()
     {}
 
     virtual bool hit(const ray& r, float t_min, float t_max, hit_record &rec) const override;
 
+    vec3 center(float time) const {
+        float t = (time - time0_) / (time1_ - time0_);
+        return lerp(center0_, center1_, t);
+    }
+
 private:
-    vec3 center_;
+    vec3 center0_;
+    vec3 center1_;
+    float time0_;
+    float time1_;
     float radius_;
     std::unique_ptr<material> material_;
 };
 
-bool sphere::hit(const ray& r, float t_min, float t_max, hit_record &rec) const
+bool moving_sphere::hit(const ray& r, float t_min, float t_max, hit_record &rec) const
 {
     // Equation of a sphere centered at C = (cx, cy, cz), radius R:
     // (x - cx)^2 + (y - cy)^2 + (z - cz)^2 = R^2
@@ -40,7 +56,8 @@ bool sphere::hit(const ray& r, float t_min, float t_max, hit_record &rec) const
     // 0 = dot(B, B) * t^2 + 2 * dot(B, A - C) * t + dot(A - C, A - C) - R^2
     // ray misses the spehere if no roots, touches the sphere if one root,
     // intersects twice if two roots
-    vec3 oc = r.origin() - center_;
+    vec3 center_at_time = center(r.time());
+    vec3 oc = r.origin() - center_at_time;
     float a = dot(r.direction(), r.direction());
     float b = dot(oc, r.direction());
     float c = dot(oc, oc) - radius_ * radius_;
@@ -52,7 +69,7 @@ bool sphere::hit(const ray& r, float t_min, float t_max, hit_record &rec) const
         {
             rec.t = temp;
             rec.p = r.point_at_parameter(temp);
-            rec.normal = (rec.p - center_) / radius_;
+            rec.normal = (rec.p - center_at_time) / radius_;
             rec.mat_ptr = material_.get();
             return true;
         }
@@ -61,7 +78,7 @@ bool sphere::hit(const ray& r, float t_min, float t_max, hit_record &rec) const
         {
             rec.t = temp;
             rec.p = r.point_at_parameter(temp);
-            rec.normal = (rec.p - center_) / radius_;
+            rec.normal = (rec.p - center_at_time) / radius_;
             rec.mat_ptr = material_.get();
             return true;
         }

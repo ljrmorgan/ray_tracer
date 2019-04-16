@@ -1,23 +1,22 @@
 #include <iostream>
 #include <utility>
 
-#include "camera.h"
-#include "hitable_list.h"
-#include "ray.h"
-#include "sphere.h"
 #include "vec3.h"
+#include "utils.h"
+
+#include "camera.h"
+#include "ray.h"
+
+#include "hitable_list.h"
+#include "moving_sphere.h"
+#include "sphere.h"
+
+#include "dielectric.h"
 #include "lambertian.h"
 #include "metal.h"
-#include "dielectric.h"
 
 static const vec3 WHITE(1.0, 1.0, 1.0);
 static const vec3 BLUE(0.5, 0.7, 1.0);
-
-// Linearly interpolate between start and end. Assumes 0 <= t <= 1
-vec3 lerp(float t, const vec3& start, const vec3& end)
-{
-    return (1.0 - t) * start + t * end;
-}
 
 // Color of the ray
 vec3 color(const ray& r, hitable *world, int depth)
@@ -39,7 +38,7 @@ vec3 color(const ray& r, hitable *world, int depth)
 
     vec3 unit_direction = unit_vector(r.direction());
     float t = 0.5 * (unit_direction.y() + 1.0);
-    return lerp(t, WHITE, BLUE);
+    return lerp(WHITE, BLUE, t);
 }
 
 hitable_list random_scene()
@@ -64,7 +63,11 @@ hitable_list random_scene()
                 {
                     vec3 albedo(drand48() * drand48(), drand48() * drand48(),
                         drand48() * drand48());
-                    scene.push_back(std::make_unique<sphere>(center,
+                    scene.push_back(std::make_unique<moving_sphere>(
+                        center,
+                        center + vec3(0, 0.5 * drand48(), 0),
+                        0.0, // time0
+                        1.0, // time1
                         small_sphere_radius,
                         std::make_unique<lambertian>(albedo)));
                 }
@@ -121,9 +124,11 @@ int main(int argc, char const *argv[])
     float fov = 20;
     float dist_to_focus = 10.0;
     float aperture = 0.1;
+    float time0 = 0.0;
+    float time1 = 1.0;
 
     camera cam(lookfrom, lookat, vup, fov, float(nx) / float(ny), aperture,
-        dist_to_focus);
+        dist_to_focus, time0, time1);
     for (int j = ny - 1; j >= 0; --j) {
         for (int i = 0; i < nx; ++i) {
             vec3 col(0, 0, 0);
