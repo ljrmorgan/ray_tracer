@@ -4,7 +4,7 @@ Working through ["Ray tracing in one weekend"](http://in1weekend.blogspot.co.uk/
 
 Building:
 ```
-cmake -H. -Bbuild
+cmake -DCMAKE_BUILD_TYPE=RELEASE -H. -Bbuild
 cmake --build build -- -j3
 ```
 

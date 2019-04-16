@@ -41,7 +41,7 @@ vec3 color(const ray& r, hitable *world, int depth)
     return lerp(WHITE, BLUE, t);
 }
 
-hitable_list random_scene()
+hitable_list large_scene()
 {
     hitable_list scene;
 
@@ -106,18 +106,8 @@ hitable_list random_scene()
     return scene;
 }
 
-int main(int argc, char const *argv[])
+camera large_camera(int nx, int ny)
 {
-    int nx = 1200;
-    int ny = 800;
-    int ns = 10;
-
-    std::cout << "P3" << std::endl
-        << nx << " " << ny << std::endl
-        << "255" << std::endl;
-
-    hitable_list world = random_scene();
-
     vec3 lookfrom(13, 2, 3);
     vec3 lookat(0, 0, 0);
     vec3 vup(0, 1, 0);
@@ -127,10 +117,67 @@ int main(int argc, char const *argv[])
     float time0 = 0.0;
     float time1 = 1.0;
 
-    camera cam(lookfrom, lookat, vup, fov, float(nx) / float(ny), aperture,
+    return camera(lookfrom, lookat, vup, fov, float(nx) / float(ny), aperture,
         dist_to_focus, time0, time1);
-    for (int j = ny - 1; j >= 0; --j) {
-        for (int i = 0; i < nx; ++i) {
+}
+
+hitable_list small_scene()
+{
+    hitable_list scene;
+
+    // floor
+    scene.push_back(std::make_unique<sphere>(vec3(0, -100.5, -1), 100,
+            std::make_unique<lambertian>(vec3(0.8, 0.8, 0.0))));
+
+    // sphere in the middle
+    scene.push_back(std::make_unique<sphere>(vec3(0, 0, -1), 0.5,
+            std::make_unique<lambertian>(vec3(0.1, 0.2, 0.5))));
+
+    // metal sphere on the right
+    scene.push_back(std::make_unique<sphere>(vec3(1, 0, -1), 0.5,
+            std::make_unique<metal>(vec3(0.8, 0.6, 0.2), 0.3)));
+
+    // hollow glass sphere on the left
+    scene.push_back(std::make_unique<sphere>(vec3(-1, 0, -1), 0.5,
+            std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
+    scene.push_back(std::make_unique<sphere>(vec3(-1, 0, -1), -0.45,
+            std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
+
+    return scene;
+}
+
+camera small_camera(int nx, int ny)
+{ 
+    vec3 lookfrom(-2, 2, 1);
+    vec3 lookat(0, 0, -1);
+    vec3 vup(0, 1, 0);
+    float fov = 20;
+    float dist_to_focus = 10.0;
+    float aperture = 0.1;
+    float time0 = 0.0;
+    float time1 = 1.0;
+
+    return camera(lookfrom, lookat, vup, fov, float(nx) / float(ny), aperture,
+        dist_to_focus, time0, time1);
+}
+
+int main(int argc, char const *argv[])
+{
+    int nx = 1200;
+    int ny = 800;
+    int ns = 10;
+
+    hitable_list world = large_scene();
+    camera cam = large_camera(nx, ny);
+
+    std::cout << "P3" << std::endl
+        << nx << " " << ny << std::endl
+        << "255" << std::endl;
+
+    for (int j = ny - 1; j >= 0; --j)
+    {
+        for (int i = 0; i < nx; ++i)
+        {
             vec3 col(0, 0, 0);
             for (int s = 0; s < ns; ++s)
             {
