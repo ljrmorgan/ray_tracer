@@ -18,6 +18,9 @@
 #include "lambertian.h"
 #include "metal.h"
 
+#include "constant_texture.h"
+#include "checkered_texture.h"
+
 static const vec3 WHITE(1.0, 1.0, 1.0);
 static const vec3 BLUE(0.5, 0.7, 1.0);
 
@@ -50,7 +53,10 @@ hitable_list large_scene()
 
     // floor
     scene.push_back(std::make_unique<sphere>(vec3(0, -1000, 0), 1000,
-        std::make_unique<lambertian>(vec3(0.5, 0.5, 0.5))));
+        std::make_unique<lambertian>(
+            std::make_unique<checkered_texture>(
+                std::make_unique<constant_texture>(vec3(0.2, 0.3, 0.1)),
+                std::make_unique<constant_texture>(vec3(0.9, 0.9, 0.9))))));
 
     // Lots of small random spheres
     float small_sphere_radius = 0.2;
@@ -72,7 +78,7 @@ hitable_list large_scene()
                         0.0, // time0
                         1.0, // time1
                         small_sphere_radius,
-                        std::make_unique<lambertian>(albedo)));
+                        std::make_unique<lambertian>(std::make_unique<constant_texture>(albedo))));
                 }
                 else if (choose_mat < 0.95) // pick metal
                 {
@@ -95,7 +101,7 @@ hitable_list large_scene()
 
     // brown diffuse sphere at the back
     scene.push_back(std::make_unique<sphere>(vec3(-4, 1, 0), 1.0,
-        std::make_unique<lambertian>(vec3(0.4, 0.2, 0.1))));
+        std::make_unique<lambertian>(std::make_unique<constant_texture>(vec3(0.4, 0.2, 0.1)))));
     // glass sphere in the middle
     scene.push_back(std::make_unique<sphere>(vec3(0, 1, 0), 1.0,
         std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
@@ -130,21 +136,23 @@ hitable_list small_scene()
 
     // floor
     scene.push_back(std::make_unique<sphere>(vec3(0, -100.5, -1), 100,
-            std::make_unique<lambertian>(vec3(0.8, 0.8, 0.0))));
+        std::make_unique<lambertian>(
+            std::make_unique<constant_texture>(vec3(0.8, 0.8, 0.0)))));
 
     // sphere in the middle
     scene.push_back(std::make_unique<sphere>(vec3(0, 0, -1), 0.5,
-            std::make_unique<lambertian>(vec3(0.1, 0.2, 0.5))));
+        std::make_unique<lambertian>(
+            std::make_unique<constant_texture>(vec3(0.1, 0.2, 0.5)))));
 
     // metal sphere on the right
     scene.push_back(std::make_unique<sphere>(vec3(1, 0, -1), 0.5,
-            std::make_unique<metal>(vec3(0.8, 0.6, 0.2), 0.3)));
+        std::make_unique<metal>(vec3(0.8, 0.6, 0.2), 0.3)));
 
     // hollow glass sphere on the left
     scene.push_back(std::make_unique<sphere>(vec3(-1, 0, -1), 0.5,
-            std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
+        std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
     scene.push_back(std::make_unique<sphere>(vec3(-1, 0, -1), -0.45,
-            std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
+        std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
 
     return scene;
 }

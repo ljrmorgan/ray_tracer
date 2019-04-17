@@ -1,15 +1,18 @@
 #pragma once
 
+#include <memory>
+
 #include "material.h"
 
 #include "hitable.h"
 #include "ray.h"
+#include "texture.h"
 #include "vec3.h"
 
 class lambertian final : public material
 {
 public:
-    lambertian(vec3 albedo)
+    lambertian(std::unique_ptr<texture> albedo)
     : albedo_(std::move(albedo))
     {}
 
@@ -18,10 +21,10 @@ public:
     {
         vec3 target = rec.p + rec.normal + random_in_unit_sphere();
         scattered = ray(rec.p, target - rec.p, r_in.time());
-        attenuation = albedo_;
+        attenuation = albedo_->value(0, 0, rec.p);
         return true;
     }
 
 private:
-    vec3 albedo_;
+    std::unique_ptr<texture> albedo_;
 };
