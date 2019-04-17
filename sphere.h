@@ -5,6 +5,7 @@
 #include "hitable.h"
 #include "ray.h"
 #include "material.h"
+#include "aabb.h"
 
 class sphere final : public hitable
 {
@@ -15,10 +16,14 @@ public:
     , material_(std::move(material))
     {}
 
-    ~sphere()
-    {}
-
     virtual bool hit(const ray& r, float t_min, float t_max, hit_record &rec) const override;
+
+    virtual bool bounding_box(float t0, float t1, aabb &box) const override
+    {
+        vec3 offset(radius_, radius_, radius_);
+        box = aabb(center_ - offset, center_ + offset);
+        return true;
+    }
 
 private:
     vec3 center_;

@@ -5,6 +5,7 @@
 
 #include "hitable.h"
 #include "ray.h"
+#include "aabb.h"
 
 class hitable_list final : public hitable
 {
@@ -19,11 +20,18 @@ public:
         list_.push_back(std::move(element));
     }
 
-    virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec) const;
+    virtual bool hit(const ray& r, float t_min, float t_max, hit_record& rec) const override;
+    virtual bool bounding_box(float t0, float t1, aabb &box) const override;
 
     size_type size() const
     {
         return list_.size();
+    }
+
+    // Let someone efficiently steal our guts if we're an rvalue reference
+    std::vector<std::unique_ptr<hitable>> elements() &&
+    {
+        return std::move(list_);
     }
 
 private:
@@ -45,4 +53,18 @@ bool hitable_list::hit(const ray& r, float t_min, float t_max, hit_record& rec) 
         }
     }
     return hit_anything;
+}
+
+bool hitable_list::bounding_box(float t0, float t1, aabb &box) const
+{
+    if (list_.empty()) return false;
+    aabb temp;
+    if (!list_[0]->bounding_box(t0, t1, temp)) return false;
+    box = temp;
+    for (int i = 1; i < list_.size(); ++i)
+    {
+        if (!list_[i]->bounding_box(t0, t1, temp)) return false;
+        box = aabb::surrounding_box(box, temp);
+    }
+    return true;
 }

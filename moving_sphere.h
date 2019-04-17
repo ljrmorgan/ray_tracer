@@ -4,6 +4,7 @@
 #include "ray.h"
 #include "material.h"
 #include "utils.h"
+#include "aabb.h"
 
 class moving_sphere final : public hitable
 {
@@ -27,6 +28,15 @@ public:
     {}
 
     virtual bool hit(const ray& r, float t_min, float t_max, hit_record &rec) const override;
+
+    virtual bool bounding_box(float t0, float t1, aabb &box) const override
+    {
+        vec3 offset(radius_, radius_, radius_);
+        aabb box0 = aabb(center0_ - offset, center0_ + offset);
+        aabb box1 = aabb(center1_ - offset, center1_ + offset);
+        box = aabb::surrounding_box(box0, box1);
+        return true;
+    }
 
     vec3 center(float time) const {
         float t = (time - time0_) / (time1_ - time0_);

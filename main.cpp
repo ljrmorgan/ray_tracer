@@ -1,3 +1,5 @@
+#define USE_BVH 1
+
 #include <iostream>
 #include <utility>
 
@@ -7,6 +9,7 @@
 #include "camera.h"
 #include "ray.h"
 
+#include "bvh.h"
 #include "hitable_list.h"
 #include "moving_sphere.h"
 #include "sphere.h"
@@ -167,7 +170,12 @@ int main(int argc, char const *argv[])
     int ny = 800;
     int ns = 10;
 
+#ifdef USE_BVH
+    bvh_node world(large_scene().elements(), 0.0, 1.0);
+#else
     hitable_list world = large_scene();
+#endif
+
     camera cam = large_camera(nx, ny);
 
     std::cout << "P3" << std::endl
