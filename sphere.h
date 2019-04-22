@@ -6,6 +6,7 @@
 #include "ray.h"
 #include "material.h"
 #include "aabb.h"
+#include "utils.h"
 
 class sphere final : public hitable
 {
@@ -58,6 +59,7 @@ bool sphere::hit(const ray& r, float t_min, float t_max, hit_record &rec) const
             rec.t = temp;
             rec.p = r.point_at_parameter(temp);
             rec.normal = (rec.p - center_) / radius_;
+            get_sphere_uv(rec.normal, rec.u, rec.v);
             rec.mat_ptr = material_.get();
             return true;
         }
@@ -67,6 +69,7 @@ bool sphere::hit(const ray& r, float t_min, float t_max, hit_record &rec) const
             rec.t = temp;
             rec.p = r.point_at_parameter(temp);
             rec.normal = (rec.p - center_) / radius_;
+            get_sphere_uv(rec.normal, rec.u, rec.v);
             rec.mat_ptr = material_.get();
             return true;
         }

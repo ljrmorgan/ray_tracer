@@ -80,6 +80,7 @@ bool moving_sphere::hit(const ray& r, float t_min, float t_max, hit_record &rec)
             rec.t = temp;
             rec.p = r.point_at_parameter(temp);
             rec.normal = (rec.p - center_at_time) / radius_;
+            get_sphere_uv(rec.normal, rec.u, rec.v);
             rec.mat_ptr = material_.get();
             return true;
         }
@@ -89,6 +90,7 @@ bool moving_sphere::hit(const ray& r, float t_min, float t_max, hit_record &rec)
             rec.t = temp;
             rec.p = r.point_at_parameter(temp);
             rec.normal = (rec.p - center_at_time) / radius_;
+            get_sphere_uv(rec.normal, rec.u, rec.v);
             rec.mat_ptr = material_.get();
             return true;
         }
