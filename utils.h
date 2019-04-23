@@ -24,3 +24,16 @@ inline void get_sphere_uv(const vec3 &p, float &u, float &v)
     u = 1 - (phi + M_PI) / (2 * M_PI);
     v = (theta + M_PI / 2) / M_PI;
 }
+
+inline float clamp(float value, float min, float max)
+{
+    if (value < min)
+    {
+        return min;
+    }
+    if (value > max)
+    {
+        return max;
+    }
+    return value;
+}

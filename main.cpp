@@ -20,6 +20,10 @@
 
 #include "constant_texture.h"
 #include "checkered_texture.h"
+#include "image_texture.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 static const vec3 WHITE(1.0, 1.0, 1.0);
 static const vec3 BLUE(0.5, 0.7, 1.0);
@@ -106,8 +110,17 @@ hitable_list large_scene()
     scene.push_back(std::make_unique<sphere>(vec3(0, 1, 0), 1.0,
         std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
     // metal sphere at the front
+    // scene.push_back(std::make_unique<sphere>(vec3(4, 1, 0), 1.0,
+    //     std::make_unique<metal>(vec3(0.7, 0.6, 0.5), 0.0)));
+    // globe at the front
+    int nx{0};
+    int ny{0};
+    int nn{0};
+    std::unique_ptr<unsigned char[]> image_data(stbi_load("earthmap.jpg", &nx, &ny, &nn, 0));
+    std::cerr << "Loaded " << nx << "x" << ny << " image" << std::endl;
     scene.push_back(std::make_unique<sphere>(vec3(4, 1, 0), 1.0,
-        std::make_unique<metal>(vec3(0.7, 0.6, 0.5), 0.0)));
+        std::make_unique<lambertian>(
+            std::make_unique<image_texture>(std::move(image_data), nx, ny))));
 
     std::cerr << "Generated scene with " << scene.size() << " spheres"
         << std::endl;
