@@ -13,10 +13,12 @@
 #include "hitable_list.h"
 #include "moving_sphere.h"
 #include "sphere.h"
+#include "rect.h"
 
 #include "dielectric.h"
 #include "lambertian.h"
 #include "metal.h"
+#include "diffuse_light.h"
 
 #include "constant_texture.h"
 #include "checkered_texture.h"
@@ -36,19 +38,19 @@ vec3 color(const ray& r, hitable *world, int depth)
     {
         ray scattered;
         vec3 attenutation;
+        vec3 emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
         if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenutation, scattered))
         {
-            return attenutation * color(scattered, world, depth + 1);
+            return emitted + attenutation * color(scattered, world, depth + 1);
         }
-        else
-        {
-            return vec3(0, 0, 0);
-        }
+
+        return emitted;
     }
 
-    vec3 unit_direction = unit_vector(r.direction());
-    float t = 0.5 * (unit_direction.y() + 1.0);
-    return lerp(WHITE, BLUE, t);
+    // vec3 unit_direction = unit_vector(r.direction());
+    // float t = 0.5 * (unit_direction.y() + 1.0);
+    // return lerp(WHITE, BLUE, t);
+    return vec3(0, 0, 0);
 }
 
 hitable_list large_scene()
@@ -171,13 +173,63 @@ hitable_list small_scene()
 }
 
 camera small_camera(int nx, int ny)
-{ 
+{
     vec3 lookfrom(-2, 2, 1);
     vec3 lookat(0, 0, -1);
     vec3 vup(0, 1, 0);
     float fov = 20;
     float dist_to_focus = 10.0;
     float aperture = 0.1;
+    float time0 = 0.0;
+    float time1 = 1.0;
+
+    return camera(lookfrom, lookat, vup, fov, float(nx) / float(ny), aperture,
+        dist_to_focus, time0, time1);
+}
+
+hitable_list light_scene()
+{
+    hitable_list scene;
+
+    // floor
+    scene.push_back(std::make_unique<sphere>(vec3(0, -1000, 0), 1000,
+        std::make_unique<lambertian>(
+            std::make_unique<checkered_texture>(
+                std::make_unique<constant_texture>(vec3(0.0, 0.0, 0.0)),
+                std::make_unique<constant_texture>(vec3(0.9, 0.9, 0.9))))));
+
+    // sphere in the middle
+    scene.push_back(std::make_unique<sphere>(vec3(0, 2, 0), 2,
+        std::make_unique<lambertian>(
+            std::make_unique<constant_texture>(vec3(0.1, 0.2, 0.5)))));
+
+    // small coloured spherical lights above
+    scene.push_back(std::make_unique<sphere>(vec3(-2, 6, 0), 0.75,
+        std::make_unique<diffuse_light>(
+            std::make_unique<constant_texture>(vec3(7, 0, 0)))));
+    scene.push_back(std::make_unique<sphere>(vec3(0, 7, 0), 0.75,
+        std::make_unique<diffuse_light>(
+            std::make_unique<constant_texture>(vec3(0, 7, 0)))));
+    scene.push_back(std::make_unique<sphere>(vec3(2, 6, 0), 0.75,
+        std::make_unique<diffuse_light>(
+            std::make_unique<constant_texture>(vec3(0, 0, 7)))));
+
+    // rectangular light on the right
+    scene.push_back(std::make_unique<xy_rect>(3, 5, 1, 3, -2,
+        std::make_unique<diffuse_light>(
+            std::make_unique<constant_texture>(vec3(4, 4, 4)))));
+
+    return scene;
+}
+
+camera light_scene_camera(int nx, int ny)
+{
+    vec3 lookfrom(9, 7, 15);
+    vec3 lookat(0, 1.5, 0);
+    vec3 vup(0, 1, 0);
+    float fov = 20;
+    float dist_to_focus = 10.0;
+    float aperture = 0.0;
     float time0 = 0.0;
     float time1 = 1.0;
 
