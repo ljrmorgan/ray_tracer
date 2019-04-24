@@ -14,6 +14,7 @@
 #include "moving_sphere.h"
 #include "sphere.h"
 #include "rect.h"
+#include "flip_normals.h"
 
 #include "dielectric.h"
 #include "lambertian.h"
@@ -237,19 +238,80 @@ camera light_scene_camera(int nx, int ny)
         dist_to_focus, time0, time1);
 }
 
+hitable_list cornell_box()
+{
+    hitable_list scene;
+
+    // Green wall on left
+    scene.push_back(
+        std::make_unique<flip_normals>(
+            std::make_unique<yz_rect>(0, 555, 0, 555, 555,
+                std::make_unique<lambertian>(
+                    std::make_unique<constant_texture>(vec3(0.12, 0.45, 0.15))))));
+
+    // Red wall on left
+    scene.push_back(
+        std::make_unique<yz_rect>(0, 555, 0, 555, 0,
+            std::make_unique<lambertian>(
+                std::make_unique<constant_texture>(vec3(0.65, 0.05, 0.05)))));
+
+    // Floor
+    scene.push_back(
+        std::make_unique<xz_rect>(0, 555, 0, 555, 0,
+            std::make_unique<lambertian>(
+                std::make_unique<constant_texture>(vec3(0.73, 0.73, 0.73)))));
+
+    // Ceiling
+    scene.push_back(
+        std::make_unique<flip_normals>(
+            std::make_unique<xz_rect>(0, 555, 0, 555, 555,
+                std::make_unique<lambertian>(
+                    std::make_unique<constant_texture>(vec3(0.73, 0.73, 0.73))))));
+
+    // Ceiling light
+    scene.push_back(
+        std::make_unique<xz_rect>(213, 343, 227, 332, 554,
+            std::make_unique<diffuse_light>(
+                std::make_unique<constant_texture>(vec3(15, 15, 15)))));
+
+    // Back wall
+    scene.push_back(
+        std::make_unique<flip_normals>(
+            std::make_unique<xy_rect>(0, 555, 0, 555, 555,
+                std::make_unique<lambertian>(
+                    std::make_unique<constant_texture>(vec3(0.73, 0.73, 0.73))))));
+
+    return scene;
+}
+
+camera cornell_camera(int nx, int ny)
+{
+    vec3 lookfrom(278, 278, -800);
+    vec3 lookat(278, 278, 0);
+    vec3 vup(0, 1, 0);
+    float fov = 40;
+    float dist_to_focus = 10.0;
+    float aperture = 0.0;
+    float time0 = 0.0;
+    float time1 = 1.0;
+
+    return camera(lookfrom, lookat, vup, fov, float(nx) / float(ny), aperture,
+        dist_to_focus, time0, time1);
+}
+
 int main(int argc, char const *argv[])
 {
-    int nx = 1200;
+    int nx = 800;
     int ny = 800;
-    int ns = 10;
+    int ns = 100;
 
 #ifdef USE_BVH
-    bvh_node world(large_scene().elements(), 0.0, 1.0);
+    bvh_node world(cornell_box().elements(), 0.0, 1.0);
 #else
-    hitable_list world = large_scene();
+    hitable_list world = cornell_box();
 #endif
 
-    camera cam = large_camera(nx, ny);
+    camera cam = cornell_camera(nx, ny);
 
     std::cout << "P3" << std::endl
         << nx << " " << ny << std::endl
