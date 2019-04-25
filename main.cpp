@@ -16,6 +16,7 @@
 #include "rect.h"
 #include "flip_normals.h"
 #include "box.h"
+#include "translate.h"
 
 #include "dielectric.h"
 #include "lambertian.h"
@@ -285,6 +286,11 @@ hitable_list cornell_box()
     // Large box at back
     scene.push_back(
             std::make_unique<box>(vec3(265, 0, 295), vec3(430, 330, 460), whiteMaterial));
+
+    // scene.push_back(
+    //     std::make_unique<translate>(
+    //         std::make_unique<box>(vec3(265, 0, 295), vec3(430, 330, 460), whiteMaterial),
+    //         vec3(200, 100, 0)));
 
     return scene;
 }
