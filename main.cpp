@@ -15,6 +15,7 @@
 #include "sphere.h"
 #include "rect.h"
 #include "flip_normals.h"
+#include "box.h"
 
 #include "dielectric.h"
 #include "lambertian.h"
@@ -242,6 +243,9 @@ hitable_list cornell_box()
 {
     hitable_list scene;
 
+    auto whiteMaterial = std::make_shared<lambertian>(std::make_unique<constant_texture>(
+        vec3(0.73, 0.73, 0.73)));
+
     // Green wall on left
     scene.push_back(
         std::make_unique<flip_normals>(
@@ -256,17 +260,12 @@ hitable_list cornell_box()
                 std::make_unique<constant_texture>(vec3(0.65, 0.05, 0.05)))));
 
     // Floor
-    scene.push_back(
-        std::make_unique<xz_rect>(0, 555, 0, 555, 0,
-            std::make_shared<lambertian>(
-                std::make_unique<constant_texture>(vec3(0.73, 0.73, 0.73)))));
+    scene.push_back(std::make_unique<xz_rect>(0, 555, 0, 555, 0, whiteMaterial));
 
     // Ceiling
     scene.push_back(
         std::make_unique<flip_normals>(
-            std::make_unique<xz_rect>(0, 555, 0, 555, 555,
-                std::make_shared<lambertian>(
-                    std::make_unique<constant_texture>(vec3(0.73, 0.73, 0.73))))));
+            std::make_unique<xz_rect>(0, 555, 0, 555, 555, whiteMaterial)));
 
     // Ceiling light
     scene.push_back(
@@ -277,9 +276,15 @@ hitable_list cornell_box()
     // Back wall
     scene.push_back(
         std::make_unique<flip_normals>(
-            std::make_unique<xy_rect>(0, 555, 0, 555, 555,
-                std::make_shared<lambertian>(
-                    std::make_unique<constant_texture>(vec3(0.73, 0.73, 0.73))))));
+            std::make_unique<xy_rect>(0, 555, 0, 555, 555, whiteMaterial)));
+
+    // Small box at front
+    scene.push_back(
+        std::make_unique<box>(vec3(130, 0, 65), vec3(295, 165, 230), whiteMaterial));
+
+    // Large box at back
+    scene.push_back(
+            std::make_unique<box>(vec3(265, 0, 295), vec3(430, 330, 460), whiteMaterial));
 
     return scene;
 }
