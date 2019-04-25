@@ -11,7 +11,7 @@
 class sphere final : public hitable
 {
 public:
-    sphere(vec3 center, float radius, std::unique_ptr<material> material)
+    sphere(vec3 center, float radius, std::shared_ptr<material> material)
     : center_(std::move(center))
     , radius_(radius)
     , material_(std::move(material))
@@ -29,7 +29,7 @@ public:
 private:
     vec3 center_;
     float radius_;
-    std::unique_ptr<material> material_;
+    std::shared_ptr<material> material_;
 };
 
 bool sphere::hit(const ray& r, float t_min, float t_max, hit_record &rec) const

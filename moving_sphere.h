@@ -15,7 +15,7 @@ public:
         float time0,
         float time1,
         float radius,
-        std::unique_ptr<material> material)
+        std::shared_ptr<material> material)
     : center0_(std::move(center0))
     , center1_(std::move(center1))
     , time0_(time0)
@@ -49,7 +49,7 @@ private:
     float time0_;
     float time1_;
     float radius_;
-    std::unique_ptr<material> material_;
+    std::shared_ptr<material> material_;
 };
 
 bool moving_sphere::hit(const ray& r, float t_min, float t_max, hit_record &rec) const

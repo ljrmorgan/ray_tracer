@@ -60,7 +60,7 @@ hitable_list large_scene()
 
     // floor
     scene.push_back(std::make_unique<sphere>(vec3(0, -1000, 0), 1000,
-        std::make_unique<lambertian>(
+        std::make_shared<lambertian>(
             std::make_unique<checkered_texture>(
                 std::make_unique<constant_texture>(vec3(0.2, 0.3, 0.1)),
                 std::make_unique<constant_texture>(vec3(0.9, 0.9, 0.9))))));
@@ -85,7 +85,7 @@ hitable_list large_scene()
                         0.0, // time0
                         1.0, // time1
                         small_sphere_radius,
-                        std::make_unique<lambertian>(std::make_unique<constant_texture>(albedo))));
+                        std::make_shared<lambertian>(std::make_unique<constant_texture>(albedo))));
                 }
                 else if (choose_mat < 0.95) // pick metal
                 {
@@ -94,13 +94,13 @@ hitable_list large_scene()
                     float fuzziness = 0.5 * drand48();
                     scene.push_back(std::make_unique<sphere>(center,
                         small_sphere_radius,
-                        std::make_unique<metal>(albedo, fuzziness)));
+                        std::make_shared<metal>(albedo, fuzziness)));
                 }
                 else // pick glass
                 {
                     scene.push_back(std::make_unique<sphere>(center,
                         small_sphere_radius,
-                        std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
+                        std::make_shared<dielectric>(GLASS_REFRACTIVE_INDEX)));
                 }
             }
         }
@@ -108,13 +108,13 @@ hitable_list large_scene()
 
     // brown diffuse sphere at the back
     scene.push_back(std::make_unique<sphere>(vec3(-4, 1, 0), 1.0,
-        std::make_unique<lambertian>(std::make_unique<constant_texture>(vec3(0.4, 0.2, 0.1)))));
+        std::make_shared<lambertian>(std::make_unique<constant_texture>(vec3(0.4, 0.2, 0.1)))));
     // glass sphere in the middle
     scene.push_back(std::make_unique<sphere>(vec3(0, 1, 0), 1.0,
-        std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
+        std::make_shared<dielectric>(GLASS_REFRACTIVE_INDEX)));
     // metal sphere at the front
     // scene.push_back(std::make_unique<sphere>(vec3(4, 1, 0), 1.0,
-    //     std::make_unique<metal>(vec3(0.7, 0.6, 0.5), 0.0)));
+    //     std::make_shared<metal>(vec3(0.7, 0.6, 0.5), 0.0)));
     // globe at the front
     int nx{0};
     int ny{0};
@@ -122,7 +122,7 @@ hitable_list large_scene()
     std::unique_ptr<unsigned char[]> image_data(stbi_load("earthmap.jpg", &nx, &ny, &nn, 0));
     std::cerr << "Loaded " << nx << "x" << ny << " image" << std::endl;
     scene.push_back(std::make_unique<sphere>(vec3(4, 1, 0), 1.0,
-        std::make_unique<lambertian>(
+        std::make_shared<lambertian>(
             std::make_unique<image_texture>(std::move(image_data), nx, ny))));
 
     std::cerr << "Generated scene with " << scene.size() << " spheres"
@@ -152,23 +152,23 @@ hitable_list small_scene()
 
     // floor
     scene.push_back(std::make_unique<sphere>(vec3(0, -100.5, -1), 100,
-        std::make_unique<lambertian>(
+        std::make_shared<lambertian>(
             std::make_unique<constant_texture>(vec3(0.8, 0.8, 0.0)))));
 
     // sphere in the middle
     scene.push_back(std::make_unique<sphere>(vec3(0, 0, -1), 0.5,
-        std::make_unique<lambertian>(
+        std::make_shared<lambertian>(
             std::make_unique<constant_texture>(vec3(0.1, 0.2, 0.5)))));
 
     // metal sphere on the right
     scene.push_back(std::make_unique<sphere>(vec3(1, 0, -1), 0.5,
-        std::make_unique<metal>(vec3(0.8, 0.6, 0.2), 0.3)));
+        std::make_shared<metal>(vec3(0.8, 0.6, 0.2), 0.3)));
 
     // hollow glass sphere on the left
     scene.push_back(std::make_unique<sphere>(vec3(-1, 0, -1), 0.5,
-        std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
+        std::make_shared<dielectric>(GLASS_REFRACTIVE_INDEX)));
     scene.push_back(std::make_unique<sphere>(vec3(-1, 0, -1), -0.45,
-        std::make_unique<dielectric>(GLASS_REFRACTIVE_INDEX)));
+        std::make_shared<dielectric>(GLASS_REFRACTIVE_INDEX)));
 
     return scene;
 }
@@ -194,30 +194,30 @@ hitable_list light_scene()
 
     // floor
     scene.push_back(std::make_unique<sphere>(vec3(0, -1000, 0), 1000,
-        std::make_unique<lambertian>(
+        std::make_shared<lambertian>(
             std::make_unique<checkered_texture>(
                 std::make_unique<constant_texture>(vec3(0.0, 0.0, 0.0)),
                 std::make_unique<constant_texture>(vec3(0.9, 0.9, 0.9))))));
 
     // sphere in the middle
     scene.push_back(std::make_unique<sphere>(vec3(0, 2, 0), 2,
-        std::make_unique<lambertian>(
+        std::make_shared<lambertian>(
             std::make_unique<constant_texture>(vec3(0.1, 0.2, 0.5)))));
 
     // small coloured spherical lights above
     scene.push_back(std::make_unique<sphere>(vec3(-2, 6, 0), 0.75,
-        std::make_unique<diffuse_light>(
+        std::make_shared<diffuse_light>(
             std::make_unique<constant_texture>(vec3(7, 0, 0)))));
     scene.push_back(std::make_unique<sphere>(vec3(0, 7, 0), 0.75,
-        std::make_unique<diffuse_light>(
+        std::make_shared<diffuse_light>(
             std::make_unique<constant_texture>(vec3(0, 7, 0)))));
     scene.push_back(std::make_unique<sphere>(vec3(2, 6, 0), 0.75,
-        std::make_unique<diffuse_light>(
+        std::make_shared<diffuse_light>(
             std::make_unique<constant_texture>(vec3(0, 0, 7)))));
 
     // rectangular light on the right
     scene.push_back(std::make_unique<xy_rect>(3, 5, 1, 3, -2,
-        std::make_unique<diffuse_light>(
+        std::make_shared<diffuse_light>(
             std::make_unique<constant_texture>(vec3(4, 4, 4)))));
 
     return scene;
@@ -246,39 +246,39 @@ hitable_list cornell_box()
     scene.push_back(
         std::make_unique<flip_normals>(
             std::make_unique<yz_rect>(0, 555, 0, 555, 555,
-                std::make_unique<lambertian>(
+                std::make_shared<lambertian>(
                     std::make_unique<constant_texture>(vec3(0.12, 0.45, 0.15))))));
 
     // Red wall on left
     scene.push_back(
         std::make_unique<yz_rect>(0, 555, 0, 555, 0,
-            std::make_unique<lambertian>(
+            std::make_shared<lambertian>(
                 std::make_unique<constant_texture>(vec3(0.65, 0.05, 0.05)))));
 
     // Floor
     scene.push_back(
         std::make_unique<xz_rect>(0, 555, 0, 555, 0,
-            std::make_unique<lambertian>(
+            std::make_shared<lambertian>(
                 std::make_unique<constant_texture>(vec3(0.73, 0.73, 0.73)))));
 
     // Ceiling
     scene.push_back(
         std::make_unique<flip_normals>(
             std::make_unique<xz_rect>(0, 555, 0, 555, 555,
-                std::make_unique<lambertian>(
+                std::make_shared<lambertian>(
                     std::make_unique<constant_texture>(vec3(0.73, 0.73, 0.73))))));
 
     // Ceiling light
     scene.push_back(
         std::make_unique<xz_rect>(213, 343, 227, 332, 554,
-            std::make_unique<diffuse_light>(
+            std::make_shared<diffuse_light>(
                 std::make_unique<constant_texture>(vec3(15, 15, 15)))));
 
     // Back wall
     scene.push_back(
         std::make_unique<flip_normals>(
             std::make_unique<xy_rect>(0, 555, 0, 555, 555,
-                std::make_unique<lambertian>(
+                std::make_shared<lambertian>(
                     std::make_unique<constant_texture>(vec3(0.73, 0.73, 0.73))))));
 
     return scene;

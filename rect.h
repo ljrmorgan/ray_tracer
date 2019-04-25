@@ -7,7 +7,7 @@
 class xy_rect final : public hitable
 {
 public:
-    xy_rect(float x0, float x1, float y0, float y1, float k, std::unique_ptr<material> material)
+    xy_rect(float x0, float x1, float y0, float y1, float k, std::shared_ptr<material> material)
     : x0_(x0)
     , x1_(x1)
     , y0_(y0)
@@ -25,7 +25,7 @@ public:
 
 private:
     float x0_, x1_, y0_, y1_, k_;
-    std::unique_ptr<material> material_;
+    std::shared_ptr<material> material_;
 };
 
 bool xy_rect::hit(const ray& r, float t_min, float t_max, hit_record& rec) const
@@ -57,7 +57,7 @@ bool xy_rect::hit(const ray& r, float t_min, float t_max, hit_record& rec) const
 class xz_rect final : public hitable
 {
 public:
-    xz_rect(float x0, float x1, float z0, float z1, float k, std::unique_ptr<material> material)
+    xz_rect(float x0, float x1, float z0, float z1, float k, std::shared_ptr<material> material)
     : x0_(x0)
     , x1_(x1)
     , z0_(z0)
@@ -75,7 +75,7 @@ public:
 
 private:
     float x0_, x1_, z0_, z1_, k_;
-    std::unique_ptr<material> material_;
+    std::shared_ptr<material> material_;
 };
 
 bool xz_rect::hit(const ray& r, float t_min, float t_max, hit_record& rec) const
@@ -107,7 +107,7 @@ bool xz_rect::hit(const ray& r, float t_min, float t_max, hit_record& rec) const
 class yz_rect final : public hitable
 {
 public:
-    yz_rect(float y0, float y1, float z0, float z1, float k, std::unique_ptr<material> material)
+    yz_rect(float y0, float y1, float z0, float z1, float k, std::shared_ptr<material> material)
     : y0_(y0)
     , y1_(y1)
     , z0_(z0)
@@ -125,7 +125,7 @@ public:
 
 private:
     float y0_, y1_, z0_, z1_, k_;
-    std::unique_ptr<material> material_;
+    std::shared_ptr<material> material_;
 };
 
 bool yz_rect::hit(const ray& r, float t_min, float t_max, hit_record& rec) const
