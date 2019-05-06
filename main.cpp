@@ -18,6 +18,7 @@
 #include "box.h"
 #include "translate.h"
 #include "rotate.h"
+#include "constant_medium.h"
 
 #include "dielectric.h"
 #include "lambertian.h"
@@ -299,6 +300,70 @@ hitable_list cornell_box()
     return scene;
 }
 
+hitable_list cornell_smoke()
+{
+    hitable_list scene;
+
+    auto whiteMaterial = std::make_shared<lambertian>(std::make_unique<constant_texture>(
+        vec3(0.73, 0.73, 0.73)));
+
+    // Green wall on left
+    scene.push_back(
+        std::make_unique<flip_normals>(
+            std::make_unique<yz_rect>(0, 555, 0, 555, 555,
+                std::make_shared<lambertian>(
+                    std::make_unique<constant_texture>(vec3(0.12, 0.45, 0.15))))));
+
+    // Red wall on left
+    scene.push_back(
+        std::make_unique<yz_rect>(0, 555, 0, 555, 0,
+            std::make_shared<lambertian>(
+                std::make_unique<constant_texture>(vec3(0.65, 0.05, 0.05)))));
+
+    // Floor
+    scene.push_back(std::make_unique<xz_rect>(0, 555, 0, 555, 0, whiteMaterial));
+
+    // Ceiling
+    scene.push_back(
+        std::make_unique<flip_normals>(
+            std::make_unique<xz_rect>(0, 555, 0, 555, 555, whiteMaterial)));
+
+    // Ceiling light
+    scene.push_back(
+        std::make_unique<xz_rect>(113, 443, 127, 432, 554,
+            std::make_shared<diffuse_light>(
+                std::make_unique<constant_texture>(vec3(7, 7, 7)))));
+
+    // Back wall
+    scene.push_back(
+        std::make_unique<flip_normals>(
+            std::make_unique<xy_rect>(0, 555, 0, 555, 555, whiteMaterial)));
+
+    // Small box at front
+    scene.push_back(
+        std::make_unique<constant_medium>(
+            std::make_unique<translate>(
+                std::make_unique<rotate_y>(
+                    std::make_unique<box>(vec3(0, 0, 0), vec3(165, 165, 165), whiteMaterial),
+                    -18),
+                vec3(130, 0, 65)),
+            0.01,
+            std::make_unique<constant_texture>(vec3(1.0, 1.0, 1.0))));
+
+    // Large box at back
+    scene.push_back(
+        std::make_unique<constant_medium>(
+            std::make_unique<translate>(
+                std::make_unique<rotate_y>(
+                    std::make_unique<box>(vec3(0, 0, 0), vec3(165, 330, 165), whiteMaterial),
+                    15),
+                vec3(265, 0, 295)),
+            0.01,
+            std::make_unique<constant_texture>(vec3(0, 0, 0))));
+
+    return scene;
+}
+
 camera cornell_camera(int nx, int ny)
 {
     vec3 lookfrom(278, 278, -800);
@@ -321,9 +386,9 @@ int main(int argc, char const *argv[])
     int ns = 100;
 
 #ifdef USE_BVH
-    bvh_node world(cornell_box().elements(), 0.0, 1.0);
+    bvh_node world(cornell_smoke().elements(), 0.0, 1.0);
 #else
-    hitable_list world = cornell_box();
+    hitable_list world = cornell_smoke();
 #endif
 
     camera cam = cornell_camera(nx, ny);
